@@ -105,7 +105,7 @@ function initComponent(options) {
         }
         innerSel.append("p").html(detailsHtml);
 
-        d3.json('../node_modules/complexviewer/demo/data/complex/EBI-9691559.json', function(data) {
+        d3.json('../component-dist/data/complex/EBI-9691559.json', function(data) {
             xlv.readMIJSON(data, false);
         });
     }
