@@ -19,7 +19,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "clean-css": "^4.2.1"
+    "clean-css": "^4.2.1",
+    "complexviewer": "^1.0.9"
   },
   "devDependencies": {
     "express": "^4.17.1",

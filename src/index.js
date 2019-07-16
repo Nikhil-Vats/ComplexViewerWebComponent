@@ -1,10 +1,14 @@
-import 'hybrids/shim';
 import {
   define
 } from 'hybrids';
 import styles from '../dist/style.css';
 /* Add any additional library imports you may need here. */
 
+import complexViewer from "../node_modules/complexviewer/build/complexviewer";
+import d3 from "../node_modules/d3/d3";
+import rgbcolor from "../node_modules/complexviewer/demo/rgbcolor";
+import legend from "../node_modules/complexviewer/demo/legend";
+import data from "../node_modules/complexviewer/demo/data/complex/index";
 
 /**
  * === Don't remove this method or styles will break.
@@ -38,41 +42,81 @@ function initComponent(options) {
     get: (host, v) => v, // required to be recognized as property descriptor,
     set: () => {}, //required to stop TypeError: setting getter-only property "x"
     connect: (host, key) => {
-
-      /**********************************************************/
-      /************************ GUIDANCE ************************/
-      /**********************************************************/
-      /** If your component uses a traditional approach of     **/
-      /** accepting an element and updating its content,       **/
-      /** initialise it here and pass `host` as the argument   **/
-      /** for the element that would normally be passed to     **/
-      /** your script. If you are creating your element from   **/
-      /** scratch, see the hybrids.js docs and maybe delete    **/
-      /** this method and follow the hybrids examples instead  **/
-      /** https://github.com/hybridsjs/hybrids                 **/
-      /**                                                      **/
-      /** See also this example component for guidance:        **/
-      /* https://github.com/yochannah/biojs-webcomponent-prototype
-      /** or admire the minimal demo below                     **/
-      /**                                                      **/
-      /**********************************************************/
-      /****** WRITE CODE TO INITIALISE YOUR COMPONENT HERE ******/
-      /**********************************************************/
-
-      /** If you need to pass in a parameter - e.g. perhaps    **/
-      /** you have a gene visualisation so you want a gene id  **/
-      /** as a parameter, set the parameter as an attribute,   **/
-      /** and then get the attribute from host, like this:     **/
-      var myGeneId = host.getAttribute("geneId");
-      /** The line above would return BRCA1 if you've left the **/
-      /** default settings. Delete if needed. **/
-
-      host.innerHTML = "<div>A placeholder for a pretty" +
-        " visualisation for " + myGeneId + ".</div>";
+      var targetDiv = document.getElementById('complexViewer');
+      var xlv = new xiNET(targetDiv);
+      xlv.svgElement.setAttribute("style", "width: 100vw; height:100vh;display: -webkit-box;display: -moz-box;display: -ms-flexbox; display: -webkit-flex;display: flex;flex-grow:1;");
 
 
-      //leave this line here. Deleting it will result in your css going AWOL.
-      addStylesIfNeeded();
+      var legend = d3.select("svg").append("g");
+      xlv.legendCallbacks.push(function (colourAssignment) {
+          legend.selectAll("*").remove();
+          var coloursKeyDiv = document.getElementById('colours');
+          if (colourAssignment){
+            var example = exampleIndex[0];
+            var table = "<table background:#EEEEEE;><tr style='height:10px;'></tr><tr><td style='width:100px;margin:10px;"
+                        + "background:#70BDBD;opacity:0.3;border:none;'>"
+                        + "</td><td >"+example.ac+"</td></tr>";
+            var domain = colourAssignment.domain();
+            var range = colourAssignment.range();
+            table += "<tr style='height:10px;'></tr>";
+            for (var i = 0; i < domain.length; i ++){
+                //make transparent version of colour
+                var temp = new RGBColor(range[i%20]);
+                var trans = "rgba(" +temp.r+","+temp.g+","+temp.b+ ", 0.6)";
+                table += "<tr><td style='width:75px;margin:10px;background:"
+                        + trans + ";border:1px solid "
+                        + range[i%20] + ";'></td><td>"
+                        + domain[i] +"</td></tr>";
+            }
+
+            table = table += "</table>";
+            coloursKeyDiv.innerHTML = table;
+        }
+
+    });
+
+    loadData();
+    changeAnnotations();
+
+    function loadData(){
+        xlv.clear();
+      //   var dataSetsSelect = document.getElementById('dataSets');
+
+        var example = exampleIndex[0];
+
+        var complexDetailsSel = d3.select('#complexDetails');
+
+        complexDetailsSel.selectAll("*").remove("*");
+
+        complexDetailsSel.append("a")
+            .attr("href","http://www.ebi.ac.uk/complexportal/complex/"+example.ac)
+            .attr("target", "_blank")
+            .html("<b>" + example.ac + "</b> - View on ComplexPortal");
+        if (example.complexAssemblies[0]) {
+            complexDetailsSel.append("p").html("<b>Type:</b> " + example.complexAssemblies[0]);
+        }
+
+
+        var innerSel = complexDetailsSel.append("div").classed("detailsInner", true);
+
+        var detailsHtml = "<b>Properties:</b> " + example.properties;
+        if (example.viewerNotes) {
+            detailsHtml += "<br><b>Viewer Notes:</b> " + example.viewerNotes;
+        }
+        innerSel.append("p").html(detailsHtml);
+
+        d3.json('../node_modules/complexviewer/demo/data/complex/EBI-9691559.json', function(data) {
+            xlv.readMIJSON(data, false);
+        });
+    }
+
+    function changeAnnotations(){
+        var annotationSelect = document.getElementById('annotationsSelect');
+        xlv.setAnnotations('MI features');
+    }
+
+    //leave this line here. Deleting it will result in your css going AWOL.
+    addStylesIfNeeded();
     }
   }
 }
