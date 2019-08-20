@@ -81,7 +81,7 @@ function initComponent(options) {
           var example = exampleIndex[i];
           var dataSetsSelect = document.getElementById('dataSets');
           var opt = document.createElement('option');
-          opt.value = "../component-dist/data/complex/" + example.ac + ".json";
+          opt.value = "../ComplexViewerWebComponent/component-dist/data/complex/" + example.ac + ".json";
           opt.innerHTML = example.name;
           dataSetsSelect.appendChild(opt);
       }
