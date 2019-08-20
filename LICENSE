@@ -19,3 +19,77 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+
+      var targetDiv = document.getElementById('complexViewer');
+      var xlv = new xiNET(targetDiv);
+      xlv.svgElement.setAttribute("style", "width: 100vw; height:100vh;display: -webkit-box;display: -moz-box;display: -ms-flexbox; display: -webkit-flex;display: flex;flex-grow:1;");
+
+
+      var legend = d3.select("svg").append("g");
+      xlv.legendCallbacks.push(function (colourAssignment) {
+          legend.selectAll("*").remove();
+          var coloursKeyDiv = document.getElementById('colours');
+          if (colourAssignment){
+            var example = exampleIndex[1];
+            var table = "<table background:#EEEEEE;><tr style='height:10px;'></tr><tr><td style='width:100px;margin:10px;"
+                        + "background:#70BDBD;opacity:0.3;border:none;'>"
+                        + "</td><td >"+example.ac+"</td></tr>";
+            var domain = colourAssignment.domain();
+            var range = colourAssignment.range();
+            table += "<tr style='height:10px;'></tr>";
+            for (var i = 0; i < domain.length; i ++){
+                //make transparent version of colour
+                var temp = new RGBColor(range[i%20]);
+                var trans = "rgba(" +temp.r+","+temp.g+","+temp.b+ ", 0.6)";
+                table += "<tr><td style='width:75px;margin:10px;background:"
+                        + trans + ";border:1px solid "
+                        + range[i%20] + ";'></td><td>"
+                        + domain[i] +"</td></tr>";
+            }
+
+            table = table += "</table>";
+            coloursKeyDiv.innerHTML = table;
+        }
+
+    });
+
+    loadData();
+    changeAnnotations();
+
+    function loadData(){
+        xlv.clear();
+      //   var dataSetsSelect = document.getElementById('dataSets');
+
+        var example = exampleIndex[1];
+
+        var complexDetailsSel = d3.select('#complexDetails');
+
+        complexDetailsSel.selectAll("*").remove("*");
+
+        complexDetailsSel.append("a")
+            .attr("href","http://www.ebi.ac.uk/complexportal/complex/"+example.ac)
+            .attr("target", "_blank")
+            .html("<b>" + example.ac + "</b> - View on ComplexPortal");
+        if (example.complexAssemblies[1]) {
+            complexDetailsSel.append("p").html("<b>Type:</b> " + example.complexAssemblies[1]);
+        }
+
+
+        var innerSel = complexDetailsSel.append("div").classed("detailsInner", true);
+
+        var detailsHtml = "<b>Properties:</b> " + example.properties;
+        if (example.viewerNotes) {
+            detailsHtml += "<br><b>Viewer Notes:</b> " + example.viewerNotes;
+        }
+        innerSel.append("p").html(detailsHtml);
+
+        d3.json('../component-dist/data/complex/EBI-9691559.json', function(data) {
+            xlv.readMIJSON(data, false);
+        });
+    }
+
+    function changeAnnotations(){
+        var annotationSelect = document.getElementById('annotationsSelect');
+        xlv.setAnnotations('MI features');
+    }
