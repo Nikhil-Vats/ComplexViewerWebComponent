@@ -20,7 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "clean-css": "^4.2.1",
-    "complexviewer": "^1.0.9"
+    "complexviewer": "^2.1.17"
   },
   "devDependencies": {
     "express": "^4.17.1",
